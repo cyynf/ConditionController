@@ -18,7 +18,7 @@ allprojects {
 ```
 简单使用
 ``` kotlin
-ConditionController<TextView>()
+ConditionController()
             .add(phone)
             .add(password)
             .add(agreement)
@@ -26,7 +26,7 @@ ConditionController<TextView>()
 ```
 自定义条件
 ``` kotlin
-ConditionController<TextView>()
+ConditionController()
             .add(phone) {
                 // 手机号码必须为13位
                 it.length() == 13

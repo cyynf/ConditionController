@@ -5,20 +5,21 @@ import android.view.View
 /**
  * 条件控制器
  */
-class ConditionController<T : View> {
+class ConditionController {
 
-    val views: ArrayList<Pair<T, (T) -> Boolean>> = arrayListOf()
+    val views: ArrayList<Pair<View, (View) -> Boolean>> = arrayListOf()
     val result: ArrayList<Boolean> = arrayListOf()
 
     /**
      * 添加<T>
      * condition：条件，默认不为空
      */
-    fun add(
+    fun <T : View> add(
         view: T,
         condition: (T) -> Boolean = defaultCondition()
-    ): ConditionController<T> {
-        views.add(Pair(view, condition))
+    ): ConditionController {
+        @Suppress("UNCHECKED_CAST")
+        views.add(Pair(view, condition as (View) -> Boolean))
         result.add(condition(view))
         return this
     }

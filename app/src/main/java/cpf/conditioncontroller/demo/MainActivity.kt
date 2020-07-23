@@ -3,7 +3,6 @@ package cpf.conditioncontroller.demo
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import cpf.conditioncontroller.ConditionController
@@ -15,7 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ConditionController<TextView>()
+        ConditionController()
             .add(phone) {
                 // 手机号码必须为13位
                 it.length() == 13
