@@ -1,5 +1,6 @@
 package cpf.conditioncontroller.demo
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -15,10 +16,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         ConditionController<TextView>()
-            .add(phone)
+            .add(phone) {
+                // 手机号码必须为13位
+                it.length() == 13
+            }
             .add(password)
             .add(agreement)
-            .bind(submit)
+            .bind(
+                target = submit,
+                success = {
+                    it.setBackgroundColor(Color.GREEN)
+                },
+                failure = {
+                    it.setBackgroundColor(Color.RED)
+                })
     }
 
     fun login(v: View) {
