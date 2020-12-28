@@ -17,52 +17,68 @@ import android.widget.TextView
 /**
  * 默认条件
  */
-fun <T> defaultCondition(): (T) -> Boolean {
-    return {
-        when (it) {
-            is ProgressBar -> it.progress in 1..it.max
-            is CompoundButton -> it.isChecked
-            is TextView -> !it.text.isNullOrBlank()
-            else -> true
-        }
+fun <T> defaultCondition(): (T) -> Boolean = {
+    when (it) {
+        is ProgressBar -> it.progress in 1..it.max
+        is CompoundButton -> it.isChecked
+        is TextView -> !it.text.isNullOrBlank()
+        else -> true
     }
 }
 
 /**
- * 状态变化监听
+ * 默认结果
  */
-@SuppressLint("ClickableViewAccessibility")
-inline fun addConditionListener(view: View, crossinline callBack: () -> Unit) {
-    when (view) {
-        is ProgressBar -> {
-            view.setOnTouchListener { _, _ ->
-                callBack()
-                return@setOnTouchListener false
-            }
-        }
-        is CompoundButton -> {
-            view.setOnCheckedChangeListener { _, _ ->
-                callBack()
-            }
-        }
-        is TextView -> {
-            view.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    callBack()
-                }
+fun defaultCallback(view: View): (Boolean) -> Unit = { view.isEnabled = it }
 
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
+interface ConditionWatcher {
 
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                }
-            })
-        }
-    }
+    fun addWatcher(view: View, onChanged: () -> Unit)
 }
 
+/**
+ * 状态变化监听，可自定义
+ */
+class DefaultConditionWatcher : ConditionWatcher {
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun addWatcher(view: View, onChanged: () -> Unit) {
+        when (view) {
+            is ProgressBar -> {
+                view.setOnTouchListener { _, _ ->
+                    onChanged()
+                    return@setOnTouchListener false
+                }
+            }
+            is CompoundButton -> {
+                view.setOnCheckedChangeListener { _, _ ->
+                    onChanged()
+                }
+            }
+            is TextView -> {
+                view.addTextChangedListener(object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        onChanged()
+                    }
+
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                    }
+                })
+            }
+        }
+    }
+
+}

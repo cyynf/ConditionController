@@ -15,20 +15,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         ConditionController()
-            .add(phone) {
-                // 手机号码必须为13位
-                it.length() == 13
-            }
+            .add(phone) { it.length() == 11 }
             .add(password)
             .add(agreement)
-            .bind(
-                target = submit,
-                success = {
-                    it.setBackgroundColor(Color.GREEN)
-                },
-                failure = {
-                    it.setBackgroundColor(Color.RED)
-                })
+            .bind(submit) {
+                submit.isEnabled = it
+                if (it) {
+                    submit.setBackgroundColor(Color.GREEN)
+                } else {
+                    submit.setBackgroundColor(Color.RED)
+                }
+            }
+            .commit()
     }
 
     fun login(v: View) {

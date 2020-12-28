@@ -7,8 +7,19 @@ import android.view.View
  */
 class ConditionController {
 
-    val views: ArrayList<Pair<View, (View) -> Boolean>> = arrayListOf()
-    val result: ArrayList<Boolean> = arrayListOf()
+    private val views: ArrayList<Pair<View, (View) -> Boolean>> = arrayListOf()
+    private val cacheResults: ArrayList<Boolean> = arrayListOf()
+    private var callbacks: ArrayList<(Boolean) -> Unit> = arrayListOf()
+    private var result: Boolean? = null
+    private lateinit var conditionWatcher: ConditionWatcher
+
+    /**
+     * 自定义ConditionWatcher
+     */
+    fun setConditionWatcher(conditionWatcher: ConditionWatcher): ConditionController {
+        this.conditionWatcher = conditionWatcher
+        return this
+    }
 
     /**
      * 添加<T>
@@ -20,43 +31,56 @@ class ConditionController {
     ): ConditionController {
         @Suppress("UNCHECKED_CAST")
         views.add(Pair(view, condition as (View) -> Boolean))
-        result.add(condition(view))
+        cacheResults.add(condition(view))
         return this
     }
 
     /**
      * 绑定视图
-     * success：添加的<T>条件都满足时回调，默认 isEnabled = true
-     * failure：添加的<T>条件有一个不满足时回调，默认 isEnabled = false
+     * callback：(Boolean) -> Unit，默认设置isEnabled
      */
-    inline fun <E : View> bind(
+    fun <E : View> bind(
         target: E,
-        crossinline success: (E) -> Unit = { it.isEnabled = true },
-        crossinline failure: (E) -> Unit = { it.isEnabled = false }
-    ) {
-        verify(target, success, failure)
-        views.forEachIndexed { index, pair ->
-            addConditionListener(pair.first) {
-                result[index] = pair.second(pair.first)
-                verify(target, success, failure)
-            }
-        }
+        callback: (Boolean) -> Unit = defaultCallback(target)
+    ): ConditionController {
+        callbacks.add(callback)
+        return this
     }
 
     /**
-     * 验证添加的<T>是否都满足条件
+     * 新增提交方法，支持多bind视图
      */
-    inline fun <E : View> verify(
-        target: E,
-        success: (E) -> Unit,
-        failure: (E) -> Unit
-    ) {
-        result.forEach {
-            if (!it) {
-                failure(target)
-                return
+    fun commit() {
+        if (!this::conditionWatcher.isInitialized) {
+            conditionWatcher = DefaultConditionWatcher()
+        }
+        views.forEachIndexed { index, pair ->
+            conditionWatcher.addWatcher(pair.first) {
+                cacheResults[index] = pair.second(pair.first)
+                verify()
             }
         }
-        success(target)
+        verify()
+    }
+
+    /**
+     * 强制更新
+     */
+    fun forceUpdate() {
+        views.forEachIndexed { index, pair ->
+            cacheResults[index] = pair.second(pair.first)
+        }
+        verify()
+    }
+
+    /**
+     * 验证缓存的结果是否都满足条件
+     */
+    private fun verify() {
+        val newResult = cacheResults.all { it }
+        if (newResult != result) {
+            callbacks.forEach { it.invoke(newResult) }
+            result = newResult
+        }
     }
 }

@@ -14,7 +14,7 @@ allprojects {
 ```
 添加依赖
 ``` groovy
-	implementation 'com.github.cyynf:ConditionController:1.0.0'
+	implementation 'com.github.cyynf:ConditionController:1.1.0'
 ```
 简单使用
 ``` kotlin
@@ -23,22 +23,21 @@ ConditionController()
             .add(password)
             .add(agreement)
             .bind(submit)
+            .commit()
 ```
 自定义条件
 ``` kotlin
 ConditionController()
-            .add(phone) {
-                // 手机号码必须为13位
-                it.length() == 13
-            }
+            .add(phone) {it.length() == 11}
             .add(password)
             .add(agreement)
-            .bind(
-                target = submit,
-                success = {
-                    it.setBackgroundColor(Color.GREEN)
-                },
-                failure = {
-                    it.setBackgroundColor(Color.RED)
-                })
+            .bind(submit) {
+                submit.isEnabled = it
+                if (it) {
+                    submit.setBackgroundColor(Color.GREEN)
+                } else {
+                    submit.setBackgroundColor(Color.RED)
+                }
+            }
+            .commit()
 ```
