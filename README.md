@@ -14,7 +14,7 @@ allprojects {
 ```
 添加依赖
 ``` groovy
-	implementation 'com.github.cyynf:ConditionController:1.1.0'
+	implementation 'com.github.cyynf:ConditionController:1.1.1'
 ```
 简单使用
 ``` kotlin
